@@ -80,7 +80,7 @@
 
   @layer utilities {
     .custom-container {
-      @apply container sm: !max-w-[1500px] !mx-auto;
+      @apply container sm:!max-w-[1500px] !mx-auto;
     }
   }
 }
