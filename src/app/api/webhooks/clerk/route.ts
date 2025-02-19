@@ -32,6 +32,10 @@ export async function POST(req: Request) {
     return new Response('Invalid signature', { status: 400 });
   }
 
+  console.log(
+    `Received webhook with ID ${event.data.id} and event type of ${event.type}`
+  );
+
   switch (event.type) {
     case 'user.created':
     case 'user.updated': {
@@ -79,5 +83,5 @@ export async function POST(req: Request) {
     }
   }
 
-  return new Response('', { status: 200 });
+  return new Response('Webhook received', { status: 200 });
 }
