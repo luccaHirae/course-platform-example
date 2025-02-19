@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { SignInButton, UserButton } from '@clerk/nextjs';
-import { currentUser } from '@clerk/nextjs/server';
 import { Suspense } from 'react';
 import { Button } from '@/components/ui/button';
+import { canAccessAdminPages } from '@/permissions/general';
+import { getCurrentUser } from '@/services/clerk';
 
 export default function ConsumerLayout({
   children,
@@ -20,7 +21,8 @@ export default function ConsumerLayout({
 }
 
 async function Navbar() {
-  const user = await currentUser();
+  const user = await getCurrentUser();
+  const hasAdminAccess = canAccessAdminPages(user);
 
   return (
     <header className='flex h-12 shadow z-10'>
@@ -32,14 +34,16 @@ async function Navbar() {
           Course Platform
         </Link>
 
-        {user ? (
+        {user.userId ? (
           <>
-            <Link
-              href='/admin'
-              className='hover:bg-accent/10 flex items-center px-2'
-            >
-              Admin
-            </Link>
+            {hasAdminAccess && (
+              <Link
+                href='/admin'
+                className='hover:bg-accent/10 flex items-center px-2'
+              >
+                Admin
+              </Link>
+            )}
 
             <Link
               href='/courses'
