@@ -13,7 +13,7 @@ export const UserTable = pgTable('users', {
   email: text().notNull(),
   name: text().notNull(),
   role: userRoleEnum().notNull().default('user'),
-  imageURl: text(),
+  imageUrl: text(),
   deletedAt: timestamp({ withTimezone: true }),
   createdAt,
   updatedAt,
