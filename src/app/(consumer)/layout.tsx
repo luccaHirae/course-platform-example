@@ -21,8 +21,8 @@ export default function ConsumerLayout({
 }
 
 async function Navbar() {
-  const user = await getCurrentUser();
-  const hasAdminAccess = canAccessAdminPages(user);
+  const { userId, role } = await getCurrentUser();
+  const hasAdminAccess = canAccessAdminPages({ role });
 
   return (
     <header className='flex h-12 shadow z-10'>
@@ -34,7 +34,7 @@ async function Navbar() {
           Course Platform
         </Link>
 
-        {user.userId ? (
+        {userId ? (
           <>
             {hasAdminAccess && (
               <Link
