@@ -11,11 +11,13 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { createCourse } from '@/features/courses/actions/courses';
+import { actionToast } from '@/lib/utils';
 
 export function CourseForm() {
   const form = useForm<z.infer<typeof courseSchema>>({
@@ -26,8 +28,9 @@ export function CourseForm() {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof courseSchema>) => {
-    createCourse(values);
+  const onSubmit = async (values: z.infer<typeof courseSchema>) => {
+    const data = await createCourse(values);
+    actionToast(data);
   };
 
   return (
@@ -49,6 +52,8 @@ export function CourseForm() {
               <FormControl>
                 <Input {...field} />
               </FormControl>
+
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -66,6 +71,8 @@ export function CourseForm() {
               <FormControl>
                 <Textarea className='min-h-20 resize-none' {...field} />
               </FormControl>
+
+              <FormMessage />
             </FormItem>
           )}
         />

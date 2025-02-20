@@ -29,7 +29,7 @@ async function Navbar() {
     <header className='flex h-12 shadow z-10'>
       <nav className='flex gap-4 custom-container'>
         <div className='mr-auto flex items-center gap-2'>
-          <Link href='/' className='text-lg hover:underline px-2'>
+          <Link href='/' className='text-lg hover:underline'>
             Course Platform
           </Link>
 
