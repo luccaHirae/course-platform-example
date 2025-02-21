@@ -18,3 +18,17 @@ export function actionToast({
     closeButton: true,
   });
 }
+
+export function formatPlural(
+  count: number,
+  { singular, plural }: { singular: string; plural: string },
+  { includeCount = true } = {}
+) {
+  const label = count === 1 ? singular : plural;
+
+  return includeCount ? `${count} ${label}` : label;
+}
+
+export function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

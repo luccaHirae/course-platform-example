@@ -1,8 +1,12 @@
+import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import { CourseTable } from '@/components/course-table';
+import { getCourses } from '@/features/courses/actions/courses';
 
-export default function AdminCoursesPage() {
+export default async function AdminCoursesPage() {
+  const courses = await getCourses();
+
   return (
     <div className='custom-container my-6'>
       <PageHeader title='Courses'>
@@ -11,9 +15,7 @@ export default function AdminCoursesPage() {
         </Button>
       </PageHeader>
 
-      <p>
-        Lorem ipsum dolor sit amet consectetur, adipisicing elit. Cumque, neque!
-      </p>
+      <CourseTable courses={courses} />
     </div>
   );
 }
