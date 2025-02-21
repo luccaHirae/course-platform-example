@@ -8,7 +8,7 @@ import {
   canCreateCourses,
   canDeleteCourse,
 } from '@/features/courses/permissions/courses';
-import { insertCourse } from '@/features/courses/db/courses';
+import { insertCourse, removeCourse } from '@/features/courses/db/courses';
 import { cacheTag } from 'next/dist/server/use-cache/cache-tag';
 import { getCourseGlobalTag } from '@/features/courses/db/cache/courses';
 import { db } from '@/drizzle/db';
@@ -46,8 +46,7 @@ export async function deleteCourse(id: string) {
     };
   }
 
-  // TODO: Delete course from database
-  console.log('Deleting course with id:', id);
+  await removeCourse(id);
 
   return {
     error: false,
