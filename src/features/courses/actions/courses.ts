@@ -1,16 +1,9 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { z } from 'zod';
-import { courseSchema } from '@/schemas/courses';
-import { getCurrentUser } from '@/services/clerk';
-import {
-  canCreateCourses,
-  canDeleteCourse,
-} from '@/features/courses/permissions/courses';
-import { insertCourse, removeCourse } from '@/features/courses/db/courses';
 import { cacheTag } from 'next/dist/server/use-cache/cache-tag';
-import { getCourseGlobalTag } from '@/features/courses/db/cache/courses';
+import { z } from 'zod';
+import { asc, countDistinct, eq } from 'drizzle-orm';
 import { db } from '@/drizzle/db';
 import {
   CourseSectionTable,
@@ -18,7 +11,31 @@ import {
   LessonTable,
   UserCourseAccessTable,
 } from '@/drizzle/schema';
-import { asc, countDistinct, eq } from 'drizzle-orm';
+import { getCurrentUser } from '@/services/clerk';
+import { courseSchema } from '@/schemas/courses';
+import {
+  canCreateCourses,
+  canDeleteCourse,
+  canUpdateCourses,
+} from '@/features/courses/permissions/courses';
+import {
+  editCourse,
+  insertCourse,
+  removeCourse,
+} from '@/features/courses/db/courses';
+import {
+  getCourseGlobalTag,
+  getCourseIdTag,
+} from '@/features/courses/db/cache/courses';
+import { getUserCourseAccessGlobalTag } from '@/features/courses/db/cache/userCourseAccess';
+import {
+  getCourseSectionCourseTag,
+  getCourseSectionGlobalTag,
+} from '@/features/courseSections/db/cache';
+import {
+  getLessonCourseTag,
+  getLessonGlobalTag,
+} from '@/features/lessons/db/cache/lessons';
 
 export async function createCourse(unsafeData: z.infer<typeof courseSchema>) {
   const { success, data } = courseSchema.safeParse(unsafeData);
@@ -34,6 +51,28 @@ export async function createCourse(unsafeData: z.infer<typeof courseSchema>) {
   const course = await insertCourse(data);
 
   redirect(`/admin/courses/${course.id}/edit`);
+}
+
+export async function updateCourse(
+  id: string,
+  unsafeData: z.infer<typeof courseSchema>
+) {
+  const { success, data } = courseSchema.safeParse(unsafeData);
+  const currentUser = await getCurrentUser();
+
+  if (!success || !canUpdateCourses(currentUser)) {
+    return {
+      error: true,
+      message: 'Error updating course',
+    };
+  }
+
+  await editCourse(id, data);
+
+  return {
+    error: false,
+    message: 'Successfully updated course',
+  };
 }
 
 export async function deleteCourse(id: string) {
@@ -57,7 +96,12 @@ export async function deleteCourse(id: string) {
 export async function getCourses() {
   'use cache';
 
-  cacheTag(getCourseGlobalTag());
+  cacheTag(
+    getCourseGlobalTag(),
+    getUserCourseAccessGlobalTag(),
+    getCourseSectionGlobalTag(),
+    getLessonGlobalTag()
+  );
 
   return db
     .select({
@@ -79,4 +123,46 @@ export async function getCourses() {
     )
     .orderBy(asc(CourseTable.name))
     .groupBy(CourseTable.id);
+}
+
+export async function getCourse(id: string) {
+  'use cache';
+
+  cacheTag(
+    getCourseIdTag(id),
+    getCourseSectionCourseTag(id),
+    getLessonCourseTag(id)
+  );
+
+  return db.query.CourseTable.findFirst({
+    columns: {
+      id: true,
+      name: true,
+      description: true,
+    },
+    where: eq(CourseTable.id, id),
+    with: {
+      courseSections: {
+        orderBy: asc(CourseSectionTable.order),
+        columns: {
+          id: true,
+          status: true,
+          name: true,
+        },
+        with: {
+          lessons: {
+            orderBy: asc(LessonTable.order),
+            columns: {
+              id: true,
+              name: true,
+              status: true,
+              description: true,
+              youtubeVideoId: true,
+              sectionId: true,
+            },
+          },
+        },
+      },
+    },
+  });
 }

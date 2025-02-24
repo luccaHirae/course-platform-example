@@ -16,20 +16,29 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { createCourse } from '@/features/courses/actions/courses';
+import { createCourse, updateCourse } from '@/features/courses/actions/courses';
 import { actionToast } from '@/lib/utils';
 
-export function CourseForm() {
+export function CourseForm({
+  course,
+}: {
+  course?: {
+    id: string;
+    name: string;
+    description: string;
+  };
+}) {
   const form = useForm<z.infer<typeof courseSchema>>({
     resolver: zodResolver(courseSchema),
-    defaultValues: {
+    defaultValues: course ?? {
       name: '',
       description: '',
     },
   });
 
   const onSubmit = async (values: z.infer<typeof courseSchema>) => {
-    const data = await createCourse(values);
+    const action = !course ? createCourse : updateCourse.bind(null, course.id);
+    const data = await action(values);
     actionToast(data);
   };
 
