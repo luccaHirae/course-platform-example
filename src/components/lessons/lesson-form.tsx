@@ -3,6 +3,9 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { lessonSchema } from '@/schemas/lessons';
+import { LessonStatus, lessonStatuses } from '@/drizzle/schema';
+import { createLesson, updateLesson } from '@/features/lessons/actions/lessons';
 import { RequiredSymbol } from '@/components/required-symbol';
 import {
   Form,
@@ -12,9 +15,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { LessonStatus, lessonStatuses } from '@/drizzle/schema';
 import {
   Select,
   SelectContent,
@@ -22,9 +22,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { lessonSchema } from '@/schemas/lessons';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { createLesson, updateLesson } from '@/features/lessons/actions/lessons';
+import { YoutubeVideoPlayer } from '@/components/youtube-video-player';
 import { actionToast } from '@/lib/utils';
 
 export function LessonForm({
@@ -60,7 +61,7 @@ export function LessonForm({
     },
   });
 
-  // const videoId = form.watch('youtubeVideoId');
+  const videoId = form.watch('youtubeVideoId');
 
   const onSubmit = async (values: z.infer<typeof lessonSchema>) => {
     const action = !lesson ? createLesson : updateLesson.bind(null, lesson.id);
@@ -210,7 +211,11 @@ export function LessonForm({
           </Button>
         </div>
 
-        {/* {videoId && <YoutubeVideoPlayer videoId={videoId} />} */}
+        {videoId && (
+          <div className='aspect-video'>
+            <YoutubeVideoPlayer videoId={videoId} />
+          </div>
+        )}
       </form>
     </Form>
   );
