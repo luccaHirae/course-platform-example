@@ -2,13 +2,13 @@ import { notFound } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { getCourse } from '@/features/courses/actions/courses';
 import { CourseForm } from '@/components/course-form';
-import { SectionFormDialog } from '@/components/section-form-dialog';
+import { SectionFormDialog } from '@/components/section/section-form-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DialogTrigger } from '@/components/ui/dialog';
 import { PageHeader } from '@/components/page-header';
-import { SortableSectionList } from '@/components/sortable-section-list';
+import { SortableSectionList } from '@/components/section/sortable-section-list';
 
 export default async function EditCoursePage({
   params,
@@ -53,6 +53,42 @@ export default async function EditCoursePage({
               />
             </CardContent>
           </Card>
+
+          <hr className='my-4' />
+
+          {/* {course.courseSections.map((section) => (
+            <Card key={section.id}>
+              <CardHeader className='flex items-center flex-row justify-between gap-4'>
+                <CardTitle
+                  className={cn(
+                    'flex items-center gap-2',
+                    section.status === 'private' && 'text-muted-foreground'
+                  )}
+                >
+                  {section.status === 'private' && <EyeClosed />}
+                  {section.name}
+                </CardTitle>
+
+                <LessonFormDialog
+                  defaultSectionId={section.id}
+                  section={course.courseSections}
+                >
+                  <DialogTrigger asChild>
+                    <Button variant='outline'>
+                      <Plus /> New Lesson
+                    </Button>
+                  </DialogTrigger>
+                </LessonFormDialog>
+              </CardHeader>
+
+              <CardContent>
+                <SortableLessonList
+                  section={course.courseSections}
+                  lessons={section.lessons}
+                />
+              </CardContent>
+            </Card>
+          ))} */}
         </TabsContent>
 
         <TabsContent value='details'>

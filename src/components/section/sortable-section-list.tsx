@@ -10,7 +10,7 @@ import {
 import { DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { SortableItem, SortableList } from '@/components/sortable-list';
-import { SectionFormDialog } from '@/components/section-form-dialog';
+import { SectionFormDialog } from '@/components/section/section-form-dialog';
 import { ActionButton } from '@/components/action-button';
 
 export function SortableSectionList({

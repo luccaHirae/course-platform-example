@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { SectionForm } from '@/components/section-form';
+import { SectionForm } from '@/components/section/section-form';
 
 export function SectionFormDialog({
   courseId,
