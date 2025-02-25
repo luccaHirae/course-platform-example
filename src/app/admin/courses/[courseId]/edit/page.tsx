@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { Plus } from 'lucide-react';
+import { EyeClosed, Plus } from 'lucide-react';
 import { getCourse } from '@/features/courses/actions/courses';
 import { CourseForm } from '@/components/course/course-form';
 import { SectionFormDialog } from '@/components/section/section-form-dialog';
@@ -9,6 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DialogTrigger } from '@/components/ui/dialog';
 import { PageHeader } from '@/components/page-header';
 import { SortableSectionList } from '@/components/section/sortable-section-list';
+import { LessonFormDialog } from '@/components/lessons/lesson-form-dialog';
+import { cn } from '@/lib/utils';
+import { SortableLessonList } from '@/components/lessons/sortable-lesson-list';
 
 export default async function EditCoursePage({
   params,
@@ -32,7 +35,7 @@ export default async function EditCoursePage({
           <TabsTrigger value='details'>Details</TabsTrigger>
         </TabsList>
 
-        <TabsContent value='lessons'>
+        <TabsContent value='lessons' className='flex flex-col gap-2'>
           <Card>
             <CardHeader className='flex items-center flex-row justify-between'>
               <CardTitle>Sections</CardTitle>
@@ -54,9 +57,9 @@ export default async function EditCoursePage({
             </CardContent>
           </Card>
 
-          <hr className='my-4' />
+          <hr className='my-2' />
 
-          {/* {course.courseSections.map((section) => (
+          {course.courseSections.map((section) => (
             <Card key={section.id}>
               <CardHeader className='flex items-center flex-row justify-between gap-4'>
                 <CardTitle
@@ -71,7 +74,7 @@ export default async function EditCoursePage({
 
                 <LessonFormDialog
                   defaultSectionId={section.id}
-                  section={course.courseSections}
+                  sections={course.courseSections}
                 >
                   <DialogTrigger asChild>
                     <Button variant='outline'>
@@ -83,12 +86,12 @@ export default async function EditCoursePage({
 
               <CardContent>
                 <SortableLessonList
-                  section={course.courseSections}
+                  sections={course.courseSections}
                   lessons={section.lessons}
                 />
               </CardContent>
             </Card>
-          ))} */}
+          ))}
         </TabsContent>
 
         <TabsContent value='details'>
