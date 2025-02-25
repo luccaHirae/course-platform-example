@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { EyeClosed, Plus, Trash2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { getCourse } from '@/features/courses/actions/courses';
 import { CourseForm } from '@/components/course-form';
 import { SectionFormDialog } from '@/components/section-form-dialog';
@@ -8,9 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DialogTrigger } from '@/components/ui/dialog';
 import { PageHeader } from '@/components/page-header';
-import { cn } from '@/lib/utils';
-import { ActionButton } from '@/components/action-button';
-import { deleteSection } from '@/features/courseSections/actions/sections';
+import { SortableSectionList } from '@/components/sortable-section-list';
 
 export default async function EditCoursePage({
   params,
@@ -49,40 +47,10 @@ export default async function EditCoursePage({
             </CardHeader>
 
             <CardContent>
-              {course.courseSections.map((secion) => (
-                <div key={secion.id} className='flex items-center gap-1'>
-                  <div
-                    className={cn(
-                      'contents',
-                      secion.status === 'private' && 'text-muted-foreground'
-                    )}
-                  >
-                    {secion.status === 'private' && (
-                      <EyeClosed className='size-4' />
-                    )}
-
-                    {secion.name}
-                  </div>
-
-                  <SectionFormDialog section={secion} courseId={course.id}>
-                    <DialogTrigger asChild>
-                      <Button variant='outline' size='sm' className='ml-auto'>
-                        Edit
-                      </Button>
-                    </DialogTrigger>
-                  </SectionFormDialog>
-
-                  <ActionButton
-                    action={deleteSection.bind(null, secion.id)}
-                    requireAreYouSure
-                    variant='destructiveOutline'
-                    size='sm'
-                  >
-                    <Trash2 />
-                    <span className='sr-only'>Delete</span>
-                  </ActionButton>
-                </div>
-              ))}
+              <SortableSectionList
+                courseId={course.id}
+                sections={course.courseSections}
+              />
             </CardContent>
           </Card>
         </TabsContent>
