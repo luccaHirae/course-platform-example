@@ -1,4 +1,4 @@
-import { CourseForm } from '@/components/course-form';
+import { CourseForm } from '@/components/course/course-form';
 import { PageHeader } from '@/components/page-header';
 
 export default function NewCoursePage() {

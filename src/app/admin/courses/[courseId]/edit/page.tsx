@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { getCourse } from '@/features/courses/actions/courses';
-import { CourseForm } from '@/components/course-form';
+import { CourseForm } from '@/components/course/course-form';
 import { SectionFormDialog } from '@/components/section/section-form-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
