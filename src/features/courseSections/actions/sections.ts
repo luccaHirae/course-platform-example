@@ -12,6 +12,7 @@ import {
   editSection,
   insertSection,
   removeSection,
+  reorderSections,
 } from '@/features/courseSections/db/sections';
 import { db } from '@/drizzle/db';
 
@@ -86,5 +87,24 @@ export async function deleteSection(id: string) {
   return {
     error: false,
     message: 'Successfully deleted course section',
+  };
+}
+
+export async function updateSectionOrder(sectionIds: string[]) {
+  if (
+    sectionIds.length === 0 ||
+    !canUpdateCourseSections(await getCurrentUser())
+  ) {
+    return {
+      error: true,
+      message: 'Error updating course section order',
+    };
+  }
+
+  await reorderSections(sectionIds);
+
+  return {
+    error: false,
+    message: 'Successfully updated course section order',
   };
 }
