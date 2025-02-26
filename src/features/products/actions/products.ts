@@ -11,7 +11,10 @@ import {
   PurchaseTable,
 } from '@/drizzle/schema';
 import { getCurrentUser } from '@/services/clerk';
-import { getProductGlobalTag } from '@/features/products/db/cache';
+import {
+  getProductGlobalTag,
+  getProductIdTag,
+} from '@/features/products/db/cache';
 import {
   canCreateProducts,
   canDeleteProducts,
@@ -48,6 +51,31 @@ export async function getProducts() {
     )
     .orderBy(asc(ProductTable.name))
     .groupBy(ProductTable.id);
+}
+
+export async function getProduct(id: string) {
+  'use cache';
+
+  cacheTag(getProductIdTag(id));
+
+  return db.query.ProductTable.findFirst({
+    columns: {
+      id: true,
+      name: true,
+      description: true,
+      priceInDollars: true,
+      status: true,
+      imageUrl: true,
+    },
+    where: eq(ProductTable.id, id),
+    with: {
+      courseProduct: {
+        columns: {
+          courseId: true,
+        },
+      },
+    },
+  });
 }
 
 export async function createProduct(unsafeData: z.infer<typeof productSchema>) {

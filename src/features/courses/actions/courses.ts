@@ -166,3 +166,14 @@ export async function getCourse(id: string) {
     },
   });
 }
+
+export async function getCoursesForProducts() {
+  'use cache';
+
+  cacheTag(getCourseGlobalTag());
+
+  return db.query.CourseTable.findMany({
+    orderBy: asc(CourseTable.name),
+    columns: { id: true, name: true },
+  });
+}
