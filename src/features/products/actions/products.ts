@@ -19,6 +19,7 @@ import {
   canCreateProducts,
   canDeleteProducts,
   canUpdateProducts,
+  wherePublicProducts,
 } from '@/features/products/permissions/products';
 import {
   editProduct,
@@ -26,6 +27,24 @@ import {
   removeProduct,
 } from '@/features/products/db/products';
 import { productSchema } from '@/schemas/products';
+
+export async function getPublicProducts() {
+  'use cache';
+
+  cacheTag(getProductGlobalTag());
+
+  return db.query.ProductTable.findMany({
+    columns: {
+      id: true,
+      name: true,
+      description: true,
+      priceInDollars: true,
+      imageUrl: true,
+    },
+    where: wherePublicProducts,
+    orderBy: asc(ProductTable.name),
+  });
+}
 
 export async function getProducts() {
   'use cache';
