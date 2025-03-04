@@ -1,7 +1,13 @@
 import { db } from '@/drizzle/db';
-import { eq } from 'drizzle-orm';
-import { CourseProductTable, ProductTable } from '@/drizzle/schema';
+import { and, eq, isNull } from 'drizzle-orm';
+import {
+  CourseProductTable,
+  ProductTable,
+  PurchaseTable,
+} from '@/drizzle/schema';
 import { revalidateProductCache } from '@/features/products/db/cache';
+import { cacheTag } from 'next/dist/server/use-cache/cache-tag';
+import { getPurchaseUserTag } from '@/features/purchases/db/cache';
 
 export async function insertProduct(
   data: typeof ProductTable.$inferInsert & { courseIds: string[] }
@@ -78,4 +84,26 @@ export async function removeProduct(id: string) {
   revalidateProductCache(deletedProduct.id);
 
   return deletedProduct;
+}
+
+export async function userOwnsProduct({
+  userId,
+  productId,
+}: {
+  userId: string;
+  productId: string;
+}) {
+  'use cache';
+
+  cacheTag(getPurchaseUserTag(userId));
+
+  const existingPurchase = await db.query.PurchaseTable.findFirst({
+    where: and(
+      eq(PurchaseTable.productId, productId),
+      eq(PurchaseTable.userId, userId),
+      isNull(PurchaseTable.refundedAt)
+    ),
+  });
+
+  return !!existingPurchase;
 }
