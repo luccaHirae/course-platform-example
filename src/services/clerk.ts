@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation';
 import { db } from '@/drizzle/db';
 import { UserRole, UserTable } from '@/drizzle/schema';
 import { getUserIdTag } from '@/features/users/db/cache';
@@ -19,6 +20,11 @@ export async function getUser(id: string) {
 
 export async function getCurrentUser({ allData = false } = {}) {
   const { userId, sessionClaims, redirectToSignIn } = await auth();
+
+  if (userId != null && sessionClaims?.dbId == null) {
+    // If the user is created in Clerk but not in our database, we need to create it
+    redirect('/api/clerk/sync-users');
+  }
 
   return {
     clerkUserId: userId,
