@@ -35,6 +35,20 @@ import { getLessonCourseTag } from '@/features/lessons/db/cache/lessons';
 import { getCourseSectionCourseTag } from '@/features/courseSections/db/cache';
 import { getCourseIdTag } from '@/features/courses/db/cache/courses';
 
+export async function getPublicSuccessPurchaseProduct(id: string) {
+  'use cache';
+
+  cacheTag(getProductIdTag(id));
+
+  return db.query.ProductTable.findFirst({
+    columns: {
+      name: true,
+      imageUrl: true,
+    },
+    where: and(eq(ProductTable.id, id), wherePublicProducts),
+  });
+}
+
 export async function getPublicPurchaseProduct(id: string) {
   'use cache';
 
