@@ -4,11 +4,13 @@ import { db } from '@/drizzle/db';
 import { and, desc, eq } from 'drizzle-orm';
 import { PurchaseTable } from '@/drizzle/schema';
 import {
+  getPurchaseGlobalTag,
   getPurchaseIdTag,
   getPurchaseUserTag,
   revalidatePurchaseCache,
 } from '@/features/purchases/db/cache';
 import { stripeServerClient } from '@/services/stripe/stripe-server';
+import { getUserGlobalTag } from '@/features/users/db/cache';
 
 export async function insertPurchase(
   data: typeof PurchaseTable.$inferInsert,
@@ -32,6 +34,59 @@ export async function insertPurchase(
   if (newPurchase) revalidatePurchaseCache(newPurchase);
 
   return newPurchase;
+}
+
+export async function updatePurchase(
+  id: string,
+  data: Partial<typeof PurchaseTable.$inferInsert>,
+  trx: Omit<typeof db, '$client'> = db
+) {
+  const details = data.productDetails;
+
+  const [updatePurchase] = await trx
+    .update(PurchaseTable)
+    .set({
+      ...data,
+      productDetails: details
+        ? {
+            name: details.name,
+            description: details.description,
+            imageUrl: details.imageUrl,
+          }
+        : undefined,
+    })
+    .where(eq(PurchaseTable.id, id))
+    .returning();
+
+  if (!updatePurchase) throw new Error('Failed to update purchase');
+
+  revalidatePurchaseCache(updatePurchase);
+
+  return updatePurchase;
+}
+
+export async function getSales() {
+  'use cache';
+
+  cacheTag(getPurchaseGlobalTag(), getUserGlobalTag());
+
+  return db.query.PurchaseTable.findMany({
+    columns: {
+      id: true,
+      pricePaidInCents: true,
+      refundedAt: true,
+      productDetails: true,
+      createdAt: true,
+    },
+    orderBy: desc(PurchaseTable.createdAt),
+    with: {
+      user: {
+        columns: {
+          name: true,
+        },
+      },
+    },
+  });
 }
 
 export async function getPurchases(userId: string) {
