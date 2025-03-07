@@ -1,6 +1,14 @@
 import { ReactNode } from 'react';
-import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { buttonVariants } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 export function SkeletonButton({ className }: { className?: string }) {
   return (
@@ -49,5 +57,29 @@ export function SkeletonText({
         ></div>
       </SkeletonArray>
     </div>
+  );
+}
+
+export function SkeletonCourseCard() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>
+          <SkeletonText className='w-3/4' />
+        </CardTitle>
+
+        <CardDescription>
+          <SkeletonText className='w-1/2' />
+        </CardDescription>
+      </CardHeader>
+
+      <CardContent>
+        <SkeletonText rows={3} />
+      </CardContent>
+
+      <CardFooter>
+        <SkeletonButton />
+      </CardFooter>
+    </Card>
   );
 }
