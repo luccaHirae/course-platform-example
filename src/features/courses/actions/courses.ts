@@ -174,6 +174,44 @@ export async function getCourse(id: string) {
   });
 }
 
+export async function getUserCourse(id: string) {
+  'use cache';
+
+  cacheTag(
+    getCourseIdTag(id),
+    getCourseSectionCourseTag(id),
+    getLessonCourseTag(id)
+  );
+
+  return db.query.CourseTable.findFirst({
+    where: eq(CourseTable.id, id),
+    columns: {
+      id: true,
+      name: true,
+    },
+    with: {
+      courseSections: {
+        orderBy: asc(CourseSectionTable.order),
+        where: wherePublicCourseSections,
+        columns: {
+          id: true,
+          name: true,
+        },
+        with: {
+          lessons: {
+            where: wherePublicLessons,
+            orderBy: asc(LessonTable.order),
+            columns: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
 export async function getCoursesForProducts() {
   'use cache';
 

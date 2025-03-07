@@ -15,6 +15,11 @@ import {
   removeLesson,
   reorderLessons,
 } from '@/features/lessons/db/lessons';
+import { db } from '@/drizzle/db';
+import { UserLessonCompleteTable } from '@/drizzle/schema';
+import { eq } from 'drizzle-orm';
+import { cacheTag } from 'next/dist/server/use-cache/cache-tag';
+import { getUserLessonCompleteUserTag } from '@/features/lessons/db/cache/userLessonComplete';
 
 export async function createLesson(unsafedata: z.infer<typeof lessonSchema>) {
   const { success, data } = lessonSchema.safeParse(unsafedata);
@@ -87,4 +92,19 @@ export async function updateLessonOrder(lessonIds: string[]) {
     error: false,
     message: 'Successfully updated lesson order',
   };
+}
+
+export async function getCompletedLessonsIds(userId: string) {
+  'use cache';
+
+  cacheTag(getUserLessonCompleteUserTag(userId));
+
+  const data = await db.query.UserLessonCompleteTable.findMany({
+    where: eq(UserLessonCompleteTable.userId, userId),
+    columns: {
+      lessonId: true,
+    },
+  });
+
+  return data.map(({ lessonId }) => lessonId);
 }
