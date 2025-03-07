@@ -53,3 +53,30 @@ export function formatDate(date: Date) {
 export function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+export function mapCourse(
+  course: {
+    id: string;
+    name: string;
+    courseSections: Array<{
+      id: string;
+      name: string;
+      lessons: Array<{
+        id: string;
+        name: string;
+      }>;
+    }>;
+  },
+  completedLessonsIds: Array<string>
+) {
+  return {
+    ...course,
+    courseSections: course.courseSections.map((section) => ({
+      ...section,
+      lessons: section.lessons.map((lesson) => ({
+        ...lesson,
+        isComplete: completedLessonsIds.includes(lesson.id),
+      })),
+    })),
+  };
+}
