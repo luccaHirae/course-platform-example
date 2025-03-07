@@ -3,13 +3,14 @@
 import { redirect } from 'next/navigation';
 import { cacheTag } from 'next/dist/server/use-cache/cache-tag';
 import { z } from 'zod';
-import { asc, countDistinct, eq } from 'drizzle-orm';
+import { and, asc, countDistinct, eq } from 'drizzle-orm';
 import { db } from '@/drizzle/db';
 import {
   CourseSectionTable,
   CourseTable,
   LessonTable,
   UserCourseAccessTable,
+  UserLessonCompleteTable,
 } from '@/drizzle/schema';
 import { getCurrentUser } from '@/services/clerk';
 import { courseSchema } from '@/schemas/courses';
@@ -27,7 +28,10 @@ import {
   getCourseGlobalTag,
   getCourseIdTag,
 } from '@/features/courses/db/cache/courses';
-import { getUserCourseAccessGlobalTag } from '@/features/courses/db/cache/userCourseAccess';
+import {
+  getUserCourseAccessGlobalTag,
+  getUserCourseAccessUserTag,
+} from '@/features/courses/db/cache/userCourseAccess';
 import {
   getCourseSectionCourseTag,
   getCourseSectionGlobalTag,
@@ -36,6 +40,9 @@ import {
   getLessonCourseTag,
   getLessonGlobalTag,
 } from '@/features/lessons/db/cache/lessons';
+import { wherePublicCourseSections } from '@/features/courseSections/permissions/sections';
+import { wherePublicLessons } from '@/features/lessons/permissions/lessons';
+import { getUserLessonCompleteUserTag } from '@/features/lessons/db/cache/userLessonComplete';
 
 export async function createCourse(unsafeData: z.infer<typeof courseSchema>) {
   const { success, data } = courseSchema.safeParse(unsafeData);
@@ -176,4 +183,61 @@ export async function getCoursesForProducts() {
     orderBy: asc(CourseTable.name),
     columns: { id: true, name: true },
   });
+}
+
+export async function getUserCourses(userId: string) {
+  'use cache';
+
+  cacheTag(
+    getUserCourseAccessUserTag(userId),
+    getUserLessonCompleteUserTag(userId)
+  );
+
+  const courses = await db
+    .select({
+      id: CourseTable.id,
+      name: CourseTable.name,
+      description: CourseTable.description,
+      sectionsCount: countDistinct(CourseSectionTable.id),
+      lessonsCount: countDistinct(LessonTable.id),
+      lessonsComplete: countDistinct(UserLessonCompleteTable.lessonId),
+    })
+    .from(CourseTable)
+    .leftJoin(
+      UserCourseAccessTable,
+      and(
+        eq(UserCourseAccessTable.courseId, CourseTable.id),
+        eq(UserCourseAccessTable.userId, userId)
+      )
+    )
+    .leftJoin(
+      CourseSectionTable,
+      and(
+        eq(CourseSectionTable.courseId, CourseTable.id),
+        wherePublicCourseSections
+      )
+    )
+    .leftJoin(
+      LessonTable,
+      and(eq(LessonTable.sectionId, CourseSectionTable.id), wherePublicLessons)
+    )
+    .leftJoin(
+      UserLessonCompleteTable,
+      and(
+        eq(UserLessonCompleteTable.lessonId, LessonTable.id),
+        eq(UserLessonCompleteTable.userId, userId)
+      )
+    )
+    .orderBy(CourseTable.name)
+    .groupBy(CourseTable.id);
+
+  courses.forEach((course) => {
+    cacheTag(
+      getCourseIdTag(course.id),
+      getCourseSectionCourseTag(course.id),
+      getLessonCourseTag(course.id)
+    );
+  });
+
+  return courses;
 }
