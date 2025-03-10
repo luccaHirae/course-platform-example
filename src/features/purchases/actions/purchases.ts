@@ -6,6 +6,8 @@ import { canRefundPurchases } from '@/features/purchases/permissions/purchases';
 import { stripeServerClient } from '@/services/stripe/stripe-server';
 import { updatePurchase } from '@/features/purchases/db/purchases';
 import { revokeUserCourseAccess } from '@/features/courses/db/userCourseAccess';
+import { count, countDistinct, isNotNull, sql, sum } from 'drizzle-orm';
+import { PurchaseTable } from '@/drizzle/schema';
 
 export async function refundPurchase(id: string) {
   if (!canRefundPurchases(await getCurrentUser())) {
@@ -61,4 +63,38 @@ export async function refundPurchase(id: string) {
       message: 'Successfully refunded purchase',
     }
   );
+}
+
+export async function getPurchaseDetails() {
+  const data = await db
+    .select({
+      totalSales: sql<number>`COALESCE(${sum(
+        PurchaseTable.pricePaidInCents
+      )}, 0)`.mapWith(Number),
+      totalPurchases: count(PurchaseTable.id),
+      totalUsers: countDistinct(PurchaseTable.userId),
+      isRefund: isNotNull(PurchaseTable.refundedAt),
+    })
+    .from(PurchaseTable)
+    .groupBy((table) => table.isRefund);
+
+  const [refundData] = data.filter((row) => row.isRefund);
+  const [salesData] = data.filter((row) => !row.isRefund);
+
+  const netSales = (salesData?.totalSales ?? 0) / 100;
+  const totalRefunds = (refundData?.totalSales ?? 0) / 100;
+  const netPurchases = salesData?.totalPurchases ?? 0;
+  const refundedPurchases = refundData?.totalPurchases ?? 0;
+  const averageNetPurchasesPerCustomer =
+    salesData?.totalUsers != null && salesData.totalUsers > 0
+      ? netPurchases / salesData.totalUsers
+      : 0;
+
+  return {
+    netSales,
+    totalRefunds,
+    netPurchases,
+    refundedPurchases,
+    averageNetPurchasesPerCustomer,
+  };
 }
