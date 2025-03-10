@@ -13,7 +13,6 @@ import {
   LessonTable,
   ProductTable,
   PurchaseTable,
-  UserCourseAccessTable,
 } from '@/drizzle/schema';
 import { cacheTag } from 'next/dist/server/use-cache/cache-tag';
 import { getPurchaseGlobalTag } from '@/features/purchases/db/cache';
@@ -138,7 +137,7 @@ export async function getTotalCourses() {
 
   const [data] = await db
     .select({ totalCourses: count(CourseTable.id) })
-    .from(UserCourseAccessTable);
+    .from(CourseTable);
 
   if (data == null) return 0;
 
