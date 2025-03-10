@@ -50,6 +50,11 @@ export function formatDate(date: Date) {
   return DATE_FORMATTER.format(date);
 }
 
+export function formatNumber(n: number, options?: Intl.NumberFormatOptions) {
+  const formatter = new Intl.NumberFormat(undefined, options);
+  return formatter.format(n);
+}
+
 export function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
