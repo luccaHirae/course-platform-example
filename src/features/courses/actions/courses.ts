@@ -279,3 +279,18 @@ export async function getUserCourses(userId: string) {
 
   return courses;
 }
+
+export async function getCourseDetails(id: string) {
+  'use cache';
+
+  cacheTag(getCourseIdTag(id));
+
+  return db.query.CourseTable.findFirst({
+    columns: {
+      id: true,
+      name: true,
+      description: true,
+    },
+    where: eq(CourseTable.id, id),
+  });
+}
