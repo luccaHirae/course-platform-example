@@ -8,6 +8,8 @@ import { updatePurchase } from '@/features/purchases/db/purchases';
 import { revokeUserCourseAccess } from '@/features/courses/db/userCourseAccess';
 import { count, countDistinct, isNotNull, sql, sum } from 'drizzle-orm';
 import { PurchaseTable } from '@/drizzle/schema';
+import { cacheTag } from 'next/dist/server/use-cache/cache-tag';
+import { getPurchaseGlobalTag } from '@/features/purchases/db/cache';
 
 export async function refundPurchase(id: string) {
   if (!canRefundPurchases(await getCurrentUser())) {
@@ -66,6 +68,10 @@ export async function refundPurchase(id: string) {
 }
 
 export async function getPurchaseDetails() {
+  'use cache';
+
+  cacheTag(getPurchaseGlobalTag());
+
   const data = await db
     .select({
       totalSales: sql<number>`COALESCE(${sum(
